@@ -1,20 +1,33 @@
 package com.example.demo.dto;
 
 import com.example.demo.models.User.UserRole;
-import lombok.Data;
 
 // DTO para sa pag-create at pag-update ng User
-// Hiwalay sa entity para hindi ma-expose ang sensitive info (hal. password in future)
-@Data
 public class UserRequest {
 
-    // Required fields
-    private String fullName;     // Buong pangalan ng empleyado
-    private String email;        // Email address (unique)
-    private String department;   // Kung saang department siya
-    private UserRole role;       // Kung ADMIN ba siya o EMPLOYEE lang
+    private String fullName;
+    private String email;
+    private String department;
+    private UserRole role;
+    private String position;
+    private String contactNumber;
 
-    // Optional fields
-    private String position;       // Job title (hal. "IT Specialist")
-    private String contactNumber;  // Telepono
+    // Getters and Setters - Manual naming para sigurado
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getDepartment() { return department; }
+    public void setDepartment(String department) { this.department = department; }
+
+    public UserRole getRole() { return role; }
+    public void setRole(UserRole role) { this.role = role; }
+
+    public String getPosition() { return position; }
+    public void setPosition(String position) { this.position = position; }
+
+    public String getContactNumber() { return contactNumber; }
+    public void setContactNumber(String contactNumber) { this.contactNumber = contactNumber; }
 }

@@ -2,24 +2,43 @@ package com.example.demo.dto;
 
 import com.example.demo.models.Asset.AssetStatus;
 import com.example.demo.models.Asset.AssetType;
-import lombok.Data;
 
-// DTO = Data Transfer Object
-// Ito yung object na ginagamit para mag-receive ng data mula sa frontend
-// Hindi direkta ang entity ang ginagamit para hindi ma-expose ang lahat ng fields
-@Data
 public class AssetRequest {
+    private String name;
+    private AssetType type;
+    private String serialNumber;
+    private AssetStatus status;
+    private String brand;
+    private String model;
+    private String purchaseDate;
+    private Double purchasePrice;
+    private String remarks;
 
-    // Required fields - kailangan laging may laman ito
-    private String name;          // Pangalan ng asset
-    private AssetType type;       // Type ng asset (LAPTOP, MONITOR, etc.)
-    private String serialNumber;  // Unique serial number
-    private AssetStatus status;   // Status ng asset
+    // Getters and Setters
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    // Optional fields - pwedeng wala
-    private String brand;         // Brand (hal. Dell, HP)
-    private String model;         // Model number
-    private String purchaseDate;  // Petsa ng pagbili
-    private Double purchasePrice; // Presyo nung binili
-    private String remarks;       // Mga notes
+    public AssetType getType() { return type; }
+    public void setType(AssetType type) { this.type = type; }
+
+    public String getSerialNumber() { return serialNumber; }
+    public void setSerialNumber(String serialNumber) { this.serialNumber = serialNumber; }
+
+    public AssetStatus getStatus() { return status; }
+    public void setStatus(AssetStatus status) { this.status = status; }
+
+    public String getBrand() { return brand; }
+    public void setBrand(String brand) { this.brand = brand; }
+
+    public String getModel() { return model; }
+    public void setModel(String model) { this.model = model; }
+
+    public String getPurchaseDate() { return purchaseDate; }
+    public void setPurchaseDate(String purchaseDate) { this.purchaseDate = purchaseDate; }
+
+    public Double getPurchasePrice() { return purchasePrice; }
+    public void setPurchasePrice(Double purchasePrice) { this.purchasePrice = purchasePrice; }
+
+    public String getRemarks() { return remarks; }
+    public void setRemarks(String remarks) { this.remarks = remarks; }
 }

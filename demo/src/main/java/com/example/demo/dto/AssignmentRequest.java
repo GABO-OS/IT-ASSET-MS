@@ -1,25 +1,27 @@
 package com.example.demo.dto;
 
-import lombok.Data;
 import java.time.LocalDate;
 
-// DTO para sa pag-assign ng asset sa isang user
-// Ginagamit ito pag may empleyado na tatanggap ng IT equipment
-@Data
 public class AssignmentRequest {
-
-    // ID ng asset na ia-assign - kailangan ito para malaman kung aling asset
     private Long assetId;
-
-    // ID ng user na tatanggap ng asset
     private Long userId;
-
-    // Petsa ng pag-assign (kung null, automatic na today ang gagamitin)
     private LocalDate assignedDate;
-
-    // Pangalan ng admin na nag-approve ng assignment
     private String assignedBy;
-
-    // Mga notes o remarks (hal. "For project use lang to")
     private String notes;
+
+    // Getters and Setters
+    public Long getAssetId() { return assetId; }
+    public void setAssetId(Long assetId) { this.assetId = assetId; }
+
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
+
+    public LocalDate getAssignedDate() { return assignedDate; }
+    public void setAssignedDate(LocalDate assignedDate) { this.assignedDate = assignedDate; }
+
+    public String getAssignedBy() { return assignedBy; }
+    public void setAssignedBy(String assignedBy) { this.assignedBy = assignedBy; }
+
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 }

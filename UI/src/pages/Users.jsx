@@ -1,269 +1,215 @@
-// Users.jsx - Page para sa pag-manage ng Employees
-// Dito pwedeng mag-add, edit, deactivate ng mga empleyado
-
 import { useState, useEffect } from "react";
-import { getAllUsers, createUser, updateUser, deactivateUser, deleteUser } from "../api/userApi";
+import userApi from "../api/userApi";
 import Modal from "../components/Modal";
 
-const ROLES       = ["EMPLOYEE", "ADMIN"];
-const DEPARTMENTS = ["IT", "HR", "Finance", "Operations", "Marketing", "Admin", "Other"];
-
-const emptyForm = {
-  fullName: "", email: "", department: "IT",
-  position: "", contactNumber: "", role: "EMPLOYEE",
-};
-
+/**
+ * Employees Management Page
+ */
 function Users() {
-  const [users, setUsers]         = useState([]);
-  const [filtered, setFiltered]   = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState(null);
-  const [search, setSearch]       = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [editMode, setEditMode]   = useState(false);
-  const [selectedId, setSelectedId] = useState(null);
-  const [form, setForm]           = useState(emptyForm);
-  const [formError, setFormError] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
 
-  useEffect(() => { fetchUsers(); }, []);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    department: "",
+    position: "",
+    contactNumber: "",
+    role: "EMPLOYEE"
+  });
 
-  // I-filter ang users kapag nag-change ang search
   useEffect(() => {
-    const q = search.toLowerCase();
-    setFiltered(
-      users.filter(
-        (u) =>
-          u.fullName.toLowerCase().includes(q) ||
-          u.email.toLowerCase().includes(q) ||
-          u.department.toLowerCase().includes(q)
-      )
-    );
-  }, [search, users]);
+    fetchUsers();
+  }, []);
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await getAllUsers();
-      setUsers(res.data);
-    } catch {
-      setError("Hindi ma-load ang users. Siguraduhing naka-run ang backend.");
+      const data = await userApi.getAll();
+      setUsers(data || []);
+    } catch (err) {
+      console.error("Failed to load employees:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const openAddModal = () => {
-    setForm(emptyForm);
-    setEditMode(false);
-    setFormError(null);
-    setShowModal(true);
-  };
-
-  const openEditModal = (user) => {
-    setForm({
-      fullName: user.fullName, email: user.email,
-      department: user.department, position: user.position || "",
-      contactNumber: user.contactNumber || "", role: user.role,
-    });
-    setSelectedId(user.id);
-    setEditMode(true);
-    setFormError(null);
-    setShowModal(true);
-  };
-
-  const handleChange = (e) =>
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-
-  const handleSubmit = async () => {
-    if (!form.fullName || !form.email || !form.department) {
-      setFormError("Kailangan ng Full Name, Email, at Department!");
-      return;
+  const handleOpenModal = (user = null) => {
+    if (user) {
+      setEditingUser(user);
+      setFormData({ ...user });
+    } else {
+      setEditingUser(null);
+      setFormData({
+        fullName: "",
+        email: "",
+        department: "",
+        position: "",
+        contactNumber: "",
+        role: "EMPLOYEE"
+      });
     }
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      if (editMode) {
-        await updateUser(selectedId, form);
+      if (editingUser) {
+        await userApi.update(editingUser.id, formData);
       } else {
-        await createUser(form);
+        await userApi.create(formData);
       }
-      setShowModal(false);
+      setIsModalOpen(false);
       fetchUsers();
     } catch (err) {
-      setFormError(err.response?.data?.message || "May error. Subukan ulit.");
+      alert(err.response?.data?.message || "Error saving employee record.");
     }
   };
 
-  // Soft delete - hindi ganap na tatanggalin, inactive lang ang magiging status
-  const handleDeactivate = async (id, name) => {
-    if (!confirm(`I-deactivate ang "${name}"? Hindi siya mabubura, inactive lang siya.`)) return;
-    try {
-      await deactivateUser(id);
-      fetchUsers();
-    } catch {
-      alert("Hindi ma-deactivate ang user.");
-    }
-  };
-
-  const handleDelete = async (id, name) => {
-    if (!confirm(`PERMANENTLY i-delete ang "${name}"? Hindi na ito maibabalik!`)) return;
-    try {
-      await deleteUser(id);
-      fetchUsers();
-    } catch {
-      alert("Hindi ma-delete. Baka may active assignments pa ang user na ito.");
-    }
-  };
-
-  if (loading) return <div className="loading">⏳ Loading employees...</div>;
+  const filteredUsers = users.filter(u => {
+    const s = search.toLowerCase();
+    return (
+      (u.fullName?.toLowerCase() || "").includes(s) ||
+      (u.email?.toLowerCase() || "").includes(s) ||
+      (u.department?.toLowerCase() || "").includes(s)
+    );
+  });
 
   return (
-    <div>
-      <div className="page-header">
-        <h1 className="page-title">👥 Employees</h1>
-        <p className="page-subtitle">Manage lahat ng empleyado na may access sa IT assets</p>
-      </div>
-
-      {error && <div className="alert alert-error">⚠️ {error}</div>}
+    <div className="users-page">
+      <header className="page-header">
+        <h1 className="page-title">Employee Directory</h1>
+        <p className="page-subtitle">Manage staff members and roles</p>
+      </header>
 
       <div className="toolbar">
         <div className="search-box">
           <span className="search-icon">🔍</span>
-          <input
-            placeholder="Maghanap ng empleyado..."
+          <input 
+            type="text" 
+            placeholder="Search employees..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <button className="btn btn-primary" onClick={openAddModal}>
-          ＋ Add Employee
+        <button className="btn btn-primary" onClick={() => handleOpenModal()}>
+          <span>➕</span> Register Employee
         </button>
       </div>
 
       <div className="card">
-        {filtered.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">👥</div>
-            <p>Walang employees na nahanap</p>
-          </div>
-        ) : (
-          <div className="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Full Name</th>
-                  <th>Email</th>
-                  <th>Department</th>
-                  <th>Position</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((user, idx) => (
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Full Name</th>
+                {/* CENTER ALIGNED DEPARTMENT */}
+                <th style={{ textAlign: 'center' }}>Department</th>
+                <th>Position</th>
+                <th>Email Address</th>
+                <th style={{ textAlign: 'center' }}>Status</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan="6" className="loading">Fetching records...</td></tr>
+              ) : filteredUsers.length > 0 ? (
+                filteredUsers.map(user => (
                   <tr key={user.id}>
-                    <td style={{ color: "var(--text-muted)" }}>{idx + 1}</td>
-                    <td style={{ fontWeight: 500 }}>{user.fullName}</td>
-                    <td style={{ color: "var(--text-secondary)", fontSize: "13px" }}>{user.email}</td>
-                    <td>{user.department}</td>
-                    <td style={{ color: "var(--text-secondary)" }}>{user.position || "—"}</td>
                     <td>
-                      <span className={`badge badge-${user.role?.toLowerCase()}`}>
+                      <div style={{ fontWeight: '600' }}>{user.fullName}</div>
+                      <div style={{ fontSize: '11px' }} className={`badge badge-${user.role?.toLowerCase()}`}>
                         {user.role}
+                      </div>
+                    </td>
+                    {/* DISPLAY CENTERED DEPARTMENT */}
+                    <td style={{ textAlign: 'center' }}>{user.department || "—"}</td>
+                    <td>{user.position || "—"}</td>
+                    <td>{user.email}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span className={`badge ${user.active ? 'badge-available' : 'badge-retired'}`}>
+                        {user.active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
                     <td>
-                      <span className={`badge ${user.active ? "badge-available" : "badge-retired"}`}>
-                        {user.active ? "Active" : "Inactive"}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="action-buttons">
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          onClick={() => openEditModal(user)}
-                        >
-                          ✏️ Edit
-                        </button>
-                        {user.active && (
-                          <button
-                            className="btn btn-secondary btn-sm"
-                            onClick={() => handleDeactivate(user.id, user.fullName)}
-                            style={{ color: "var(--warning)", borderColor: "var(--warning)" }}
-                          >
-                            ⛔
-                          </button>
-                        )}
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() => handleDelete(user.id, user.fullName)}
-                        >
-                          🗑️
-                        </button>
+                      <div className="action-buttons" style={{ justifyContent: 'flex-end' }}>
+                        <button className="btn btn-secondary btn-sm" onClick={() => handleOpenModal(user)}>✏️ Edit</button>
                       </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="empty-state">
+                    <div className="empty-icon">👥</div>
+                    <p>No employees found.</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Add/Edit User Modal */}
-      {showModal && (
-        <Modal
-          title={editMode ? "✏️ Edit Employee" : "＋ Add Employee"}
-          onClose={() => setShowModal(false)}
-          footer={
-            <>
-              <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
-                Cancel
-              </button>
-              <button className="btn btn-primary" onClick={handleSubmit}>
-                {editMode ? "Save Changes" : "Add Employee"}
-              </button>
-            </>
-          }
-        >
-          {formError && <div className="alert alert-error">⚠️ {formError}</div>}
-
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingUser ? "Edit Employee Information" : "Register New Employee"}
+        footer={
+          <>
+            <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cancel</button>
+            <button className="btn btn-primary" onClick={handleSubmit}>
+              {editingUser ? "Update Profile" : "Register"}
+            </button>
+          </>
+        }
+      >
+        <form className="user-form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label">Full Name</label>
+            <input 
+              className="form-control"
+              required
+              value={formData.fullName || ""}
+              onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Email Address</label>
+            <input 
+              type="email"
+              className="form-control"
+              required
+              value={formData.email || ""}
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
+            />
+          </div>
           <div className="form-grid-2">
             <div className="form-group">
-              <label className="form-label">Full Name *</label>
-              <input name="fullName" className="form-control"
-                placeholder="hal. Juan dela Cruz" value={form.fullName} onChange={handleChange} />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Email *</label>
-              <input name="email" type="email" className="form-control"
-                placeholder="juan@company.com" value={form.email} onChange={handleChange} />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Department *</label>
-              <select name="department" className="form-control" value={form.department} onChange={handleChange}>
-                {DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
-              </select>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Role</label>
-              <select name="role" className="form-control" value={form.role} onChange={handleChange}>
-                {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
-              </select>
+              <label className="form-label">Department</label>
+              <input 
+                className="form-control"
+                required
+                value={formData.department || ""}
+                onChange={(e) => setFormData({...formData, department: e.target.value})}
+              />
             </div>
             <div className="form-group">
               <label className="form-label">Position</label>
-              <input name="position" className="form-control"
-                placeholder="hal. IT Specialist" value={form.position} onChange={handleChange} />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Contact Number</label>
-              <input name="contactNumber" className="form-control"
-                placeholder="hal. 09XX-XXX-XXXX" value={form.contactNumber} onChange={handleChange} />
+              <input 
+                className="form-control"
+                value={formData.position || ""}
+                onChange={(e) => setFormData({...formData, position: e.target.value})}
+              />
             </div>
           </div>
-        </Modal>
-      )}
+        </form>
+      </Modal>
     </div>
   );
 }

@@ -1,26 +1,24 @@
-// Modal.jsx - Reusable modal component
-// Ginagamit ito para sa add/edit forms - para hindi kailangang gumawa ng bagong modal per page
+/**
+ * Modal Component
+ * A reusable popup window for forms and confirmations
+ */
+function Modal({ isOpen, onClose, title, children, footer }) {
+  // If not open, don't render anything
+  if (!isOpen) return null;
 
-function Modal({ title, onClose, children, footer }) {
   return (
-    // Dark overlay - kapag ni-click ang labas ng modal, magsasara
     <div className="modal-overlay" onClick={onClose}>
-
-      {/* I-stop ang click propagation para hindi magsara kapag ni-click ang loob */}
+      {/* stopPropagation prevents closing the modal when clicking inside the content */}
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-
-        {/* Header ng modal - may title at close button */}
         <div className="modal-header">
           <h3 className="modal-title">{title}</h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          <button className="modal-close" onClick={onClose}>&times;</button>
         </div>
 
-        {/* Content ng modal - dinidictate ng parent component */}
         <div className="modal-body">
           {children}
         </div>
 
-        {/* Footer ng modal - buttons (Save, Cancel, etc.) */}
         {footer && (
           <div className="modal-footer">
             {footer}

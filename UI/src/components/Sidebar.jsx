@@ -1,51 +1,42 @@
-// Sidebar.jsx - Navigation sidebar ng buong application
-// Ito ang nakalagay sa kaliwa ng screen - navigation links dito
+import { NavLink } from "react-router-dom";
 
-import { useLocation, useNavigate } from "react-router-dom";
-
-// Listahan ng navigation items - para madaling mag-add ng bagong pages
-const navItems = [
-  { path: "/",           icon: "📊", label: "Dashboard"   },
-  { path: "/assets",     icon: "💻", label: "Assets"      },
-  { path: "/users",      icon: "👥", label: "Employees"   },
-  { path: "/assignments",icon: "🔗", label: "Assignments" },
-];
-
+/**
+ * Sidebar Component
+ * Provides main navigation for the system
+ */
 function Sidebar() {
-  const location = useLocation(); // Para malaman kung saang page tayo ngayon
-  const navigate = useNavigate(); // Para mag-navigate sa ibang pages
-
   return (
     <aside className="sidebar">
-      {/* Brand/Logo section */}
       <div className="sidebar-brand">
-        <h2>🖥️ IT Asset MS</h2>
+        <h2>IT ASSET MS</h2>
         <p>Asset Management System</p>
       </div>
 
-      {/* Navigation links */}
       <nav className="sidebar-nav">
-        <p className="sidebar-section-label">Main Menu</p>
+        <div className="sidebar-section-label">General</div>
+        <NavLink to="/" className="nav-link">
+          <span className="nav-icon">📊</span>
+          <span>Dashboard</span>
+        </NavLink>
 
-        {/* I-map ang navItems para gumawa ng nav links */}
-        {navItems.map((item) => (
-          <button
-            key={item.path}
-            className={`nav-link ${location.pathname === item.path ? "active" : ""}`}
-            onClick={() => navigate(item.path)}
-          >
-            <span className="nav-icon">{item.icon}</span>
-            {item.label}
-          </button>
-        ))}
+        <div className="sidebar-section-label">Inventory</div>
+        <NavLink to="/assets" className="nav-link">
+          <span className="nav-icon">💻</span>
+          <span>Asset List</span>
+        </NavLink>
+
+        <div className="sidebar-section-label">Resources</div>
+        <NavLink to="/users" className="nav-link">
+          <span className="nav-icon">👥</span>
+          <span>Employees</span>
+        </NavLink>
+
+        <div className="sidebar-section-label">Operations</div>
+        <NavLink to="/assignments" className="nav-link">
+          <span className="nav-icon">📝</span>
+          <span>Assignments</span>
+        </NavLink>
       </nav>
-
-      {/* Footer ng sidebar */}
-      <div style={{ padding: "16px 20px", borderTop: "1px solid var(--border)" }}>
-        <p style={{ fontSize: "11px", color: "var(--text-muted)" }}>
-          Backend: localhost:8080
-        </p>
-      </div>
     </aside>
   );
 }

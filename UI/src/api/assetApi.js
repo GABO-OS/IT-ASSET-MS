@@ -1,42 +1,59 @@
-// assetApi.js - Lahat ng HTTP calls para sa Assets
-// Ginagamit ang axios para mas madali mag-call ng REST API
-
 import axios from "axios";
 
-// Base URL ng backend - kung mag-change ng port, dito lang baguhin
 const BASE_URL = "http://localhost:8080/api/assets";
 
-// ===================== ASSET API CALLS =====================
+/**
+ * Asset API Service
+ * Handles all hardware inventory communication
+ */
+const assetApi = {
+  // Get all assets in the inventory
+  getAll: async () => {
+    const response = await axios.get(BASE_URL);
+    return response.data;
+  },
 
-// Kunin lahat ng assets
-export const getAllAssets = () => axios.get(BASE_URL);
+  // Get a single asset by its ID
+  getById: async (id) => {
+    const response = await axios.get(`${BASE_URL}/${id}`);
+    return response.data;
+  },
 
-// Kunin ang isang asset gamit ang ID
-export const getAssetById = (id) => axios.get(`${BASE_URL}/${id}`);
+  // Get assets filtered by status (AVAILABLE, IN_USE, etc.)
+  getByStatus: async (status) => {
+    const response = await axios.get(`${BASE_URL}/status/${status}`);
+    return response.data;
+  },
 
-// Kunin ang assets ayon sa status (AVAILABLE, IN_USE, etc.)
-export const getAssetsByStatus = (status) =>
-  axios.get(`${BASE_URL}/status/${status}`);
+  // Helper to specifically get available assets
+  getAvailable: async () => {
+    const response = await axios.get(`${BASE_URL}/status/AVAILABLE`);
+    return response.data;
+  },
 
-// Kunin ang assets ayon sa type (LAPTOP, MONITOR, etc.)
-export const getAssetsByType = (type) =>
-  axios.get(`${BASE_URL}/type/${type}`);
+  // Search for assets by name
+  search: async (name) => {
+    const response = await axios.get(`${BASE_URL}/search`, { params: { name } });
+    return response.data;
+  },
 
-// Maghanap ng asset gamit ang name
-export const searchAssets = (name) =>
-  axios.get(`${BASE_URL}/search`, { params: { name } });
+  // Register a new asset
+  create: async (assetData) => {
+    const response = await axios.post(BASE_URL, assetData);
+    return response.data;
+  },
 
-// Mag-add ng bagong asset
-export const createAsset = (assetData) =>
-  axios.post(BASE_URL, assetData);
+  // Update an existing asset
+  update: async (id, assetData) => {
+    const response = await axios.put(`${BASE_URL}/${id}`, assetData);
+    return response.data;
+  },
 
-// I-update ang impormasyon ng asset
-export const updateAsset = (id, assetData) =>
-  axios.put(`${BASE_URL}/${id}`, assetData);
+  // Delete an asset from the system
+  delete: async (id) => {
+    const response = await axios.delete(`${BASE_URL}/${id}`);
+    return response.data;
+  }
+};
 
-// I-update lang ang status ng asset
-export const updateAssetStatus = (id, status) =>
-  axios.patch(`${BASE_URL}/${id}/status/${status}`);
-
-// I-delete ang asset
-export const deleteAsset = (id) => axios.delete(`${BASE_URL}/${id}`);
+export default assetApi;

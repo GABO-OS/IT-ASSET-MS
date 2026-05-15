@@ -1,75 +1,83 @@
 package com.example.demo.models;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.List;
 
-// Ito yung entity na kumakatawan sa isang IT asset (hal. laptop, monitor, printer)
 @Entity
 @Table(name = "assets")
-@Data                  // Auto-generate getters, setters, toString (gawa ni Lombok)
-@NoArgsConstructor     // Default constructor - kailangan ng JPA
-@AllArgsConstructor    // Constructor with all fields
 public class Asset {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment ang ID
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Pangalan ng asset (hal. "Dell Laptop", "HP Monitor")
     @Column(nullable = false)
     private String name;
 
-    // Type ng asset (LAPTOP, DESKTOP, MONITOR, PRINTER, etc.)
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AssetType type;
 
-    // Serial number para ma-identify nang unique ang bawat asset
     @Column(unique = true, nullable = false)
     private String serialNumber;
 
-    // Brand ng asset (hal. "Dell", "HP", "Lenovo")
-    private String brand;
-
-    // Model number ng asset
-    private String model;
-
-    // Status kung available ba or in-use na ang asset
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AssetStatus status;
 
-    // Petsa kung kailan binili ang asset
+    private String brand;
+    private String model;
     private String purchaseDate;
-
-    // Halaga ng asset nung binili
     private Double purchasePrice;
-
-    // Mga notes o remarks tungkol sa asset
     private String remarks;
 
-    // Enum para sa type ng asset
+    // ADDED @JsonIgnore: Pipigilan nito ang circular reference para hindi mag-loop ang JSON
+    @JsonIgnore
+    @OneToMany(mappedBy = "asset", cascade = CascadeType.ALL)
+    private List<AssetAssignment> assignments;
+
+    public Asset() {}
+
+    // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public AssetType getType() { return type; }
+    public void setType(AssetType type) { this.type = type; }
+
+    public String getSerialNumber() { return serialNumber; }
+    public void setSerialNumber(String serialNumber) { this.serialNumber = serialNumber; }
+
+    public AssetStatus getStatus() { return status; }
+    public void setStatus(AssetStatus status) { this.status = status; }
+
+    public String getBrand() { return brand; }
+    public void setBrand(String brand) { this.brand = brand; }
+
+    public String getModel() { return model; }
+    public void setModel(String model) { this.model = model; }
+
+    public String getPurchaseDate() { return purchaseDate; }
+    public void setPurchaseDate(String purchaseDate) { this.purchaseDate = purchaseDate; }
+
+    public Double getPurchasePrice() { return purchasePrice; }
+    public void setPurchasePrice(Double purchasePrice) { this.purchasePrice = purchasePrice; }
+
+    public String getRemarks() { return remarks; }
+    public void setRemarks(String remarks) { this.remarks = remarks; }
+
+    public List<AssetAssignment> getAssignments() { return assignments; }
+    public void setAssignments(List<AssetAssignment> assignments) { this.assignments = assignments; }
+
     public enum AssetType {
-        LAPTOP,
-        DESKTOP,
-        MONITOR,
-        PRINTER,
-        KEYBOARD,
-        MOUSE,
-        UPS,
-        SERVER,
-        NETWORKING,
-        OTHER
+        LAPTOP, MONITOR, MOUSE, KEYBOARD, PRINTER, OTHERS
     }
 
-    // Enum para sa status ng asset
     public enum AssetStatus {
-        AVAILABLE,    // Pwede pang hiramin
-        IN_USE,       // May gumagamit na
-        UNDER_REPAIR, // Nirerepair
-        RETIRED,      // Hindi na ginagamit
-        LOST          // Nawawala
+        AVAILABLE, IN_USE, UNDER_REPAIR, LOST, DISPOSED
     }
 }

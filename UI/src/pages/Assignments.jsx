@@ -1,273 +1,215 @@
-// Assignments.jsx - Page para sa pag-assign at pag-return ng IT assets
-// Ito yung pinaka-main na functionality ng system
-
 import { useState, useEffect } from "react";
-import {
-  getAllAssignments, assignAsset, returnAsset, markAsLost,
-} from "../api/assignmentApi";
-import { getAllAssets } from "../api/assetApi";
-import { getAllUsers } from "../api/userApi";
+import assignmentApi from "../api/assignmentApi";
+import assetApi from "../api/assetApi";
+import userApi from "../api/userApi";
 import Modal from "../components/Modal";
 
-const statusBadge = (status) => {
-  const map = { ACTIVE: "active", RETURNED: "returned", LOST: "lost" };
-  return `badge badge-${map[status] || "retired"}`;
-};
-
-const emptyForm = { assetId: "", userId: "", assignedBy: "", notes: "", assignedDate: "" };
-
+/**
+ * Assignments Page
+ * Handles assigning assets to employees and tracking returns/losses
+ */
 function Assignments() {
   const [assignments, setAssignments] = useState([]);
-  const [filtered, setFiltered]       = useState([]);
-  const [assets, setAssets]           = useState([]);   // Para sa assign dropdown
-  const [users, setUsers]             = useState([]);   // Para sa assign dropdown
-  const [loading, setLoading]         = useState(true);
-  const [error, setError]             = useState(null);
-  const [search, setSearch]           = useState("");
-  const [filterStatus, setFilterStatus] = useState("ALL"); // Filter by status
-  const [showModal, setShowModal]     = useState(false);
-  const [form, setForm]               = useState(emptyForm);
-  const [formError, setFormError]     = useState(null);
+  const [assets, setAssets] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    assetId: "",
+    userId: "",
+    assignedBy: "",
+    notes: ""
+  });
 
-  // Kunin lang ang available assets para sa dropdown
-  const availableAssets = assets.filter((a) => a.status === "AVAILABLE");
-
-  useEffect(() => { fetchAll(); }, []);
-
-  // I-filter ang assignments kapag nag-change ang search o status filter
   useEffect(() => {
-    let result = assignments;
+    fetchData();
+  }, []);
 
-    // Filter by status
-    if (filterStatus !== "ALL") {
-      result = result.filter((a) => a.status === filterStatus);
-    }
-
-    // Filter by search
-    const q = search.toLowerCase();
-    if (q) {
-      result = result.filter(
-        (a) =>
-          a.asset?.name?.toLowerCase().includes(q) ||
-          a.user?.fullName?.toLowerCase().includes(q) ||
-          (a.assignedBy || "").toLowerCase().includes(q)
-      );
-    }
-
-    setFiltered(result);
-  }, [search, filterStatus, assignments]);
-
-  const fetchAll = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
-      // I-fetch ang assignments, assets, at users sabay-sabay
-      const [assignRes, assetRes, userRes] = await Promise.all([
-        getAllAssignments(),
-        getAllAssets(),
-        getAllUsers(),
+      const [assignData, assetData, userData] = await Promise.all([
+        assignmentApi.getAll(),
+        assetApi.getAvailable(), 
+        userApi.getActive()
       ]);
-      // Pinaka-bago ang nasa itaas
-      setAssignments([...assignRes.data].reverse());
-      setAssets(assetRes.data);
-      setUsers(userRes.data);
-    } catch {
-      setError("Hindi ma-load ang assignments.");
+      setAssignments(assignData || []);
+      setAssets(assetData || []);
+      setUsers(userData || []);
+    } catch (err) {
+      console.error("Error fetching data:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e) =>
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-
-  const handleAssign = async () => {
-    if (!form.assetId || !form.userId || !form.assignedBy) {
-      setFormError("Kailangan ng Asset, Employee, at Assigned By!");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!formData.assetId || !formData.userId) {
+      alert("Please select both an asset and an employee.");
       return;
     }
+
     try {
-      await assignAsset({
-        assetId: Number(form.assetId),
-        userId: Number(form.userId),
-        assignedBy: form.assignedBy,
-        notes: form.notes,
-        assignedDate: form.assignedDate || null,
+      await assignmentApi.assign({
+        ...formData,
+        assetId: parseInt(formData.assetId),
+        userId: parseInt(formData.userId)
       });
-      setShowModal(false);
-      fetchAll(); // I-refresh lahat
+      
+      setIsModalOpen(false);
+      setFormData({ assetId: "", userId: "", assignedBy: "", notes: "" });
+      fetchData(); 
     } catch (err) {
-      setFormError(err.response?.data?.message || "May error. Baka in-use na ang asset.");
+      alert(err.response?.data?.message || "Failed to process assignment.");
     }
   };
 
-  // I-return ang asset - kailangan ng confirmation
-  const handleReturn = async (id, assetName) => {
-    if (!confirm(`I-return ang asset na "${assetName}"?`)) return;
-    try {
-      await returnAsset(id);
-      fetchAll();
-    } catch {
-      alert("Hindi ma-process ang return.");
+  const handleReturn = async (id) => {
+    if (window.confirm("Confirm return of this asset? It will be marked as AVAILABLE again.")) {
+      try {
+        await assignmentApi.returnAsset(id);
+        fetchData();
+      } catch (err) {
+        alert("Error processing return.");
+      }
     }
   };
 
-  // I-mark ang asset na nawala
-  const handleMarkLost = async (id, assetName) => {
-    if (!confirm(`I-mark bilang LOST ang "${assetName}"? Mababago ang status ng asset.`)) return;
-    try {
-      await markAsLost(id);
-      fetchAll();
-    } catch {
-      alert("Hindi ma-mark as lost.");
+  const handleLost = async (id) => {
+    if (window.confirm("Are you sure you want to mark this asset as LOST? This is a permanent status change.")) {
+      try {
+        await assignmentApi.markAsLost(id);
+        fetchData();
+      } catch (err) {
+        alert("Error updating status to LOST.");
+      }
     }
   };
-
-  if (loading) return <div className="loading">⏳ Loading assignments...</div>;
 
   return (
-    <div>
-      <div className="page-header">
-        <h1 className="page-title">🔗 Assignments</h1>
-        <p className="page-subtitle">Track kung sino ang may hawak ng anong IT asset</p>
-      </div>
+    <div className="assignments-page">
+      <header className="page-header">
+        <h1 className="page-title">Operations & Assignments</h1>
+        <p className="page-subtitle">Track hardware usage, returns, and losses</p>
+      </header>
 
-      {error && <div className="alert alert-error">⚠️ {error}</div>}
-
-      {/* Toolbar - search, filter, at assign button */}
       <div className="toolbar">
-        <div style={{ display: "flex", gap: "10px", flex: 1, flexWrap: "wrap" }}>
-          <div className="search-box">
-            <span className="search-icon">🔍</span>
-            <input
-              placeholder="Maghanap..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          {/* Status filter dropdown */}
-          <select
-            className="form-control"
-            style={{ width: "auto", padding: "8px 14px" }}
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option value="ALL">All Status</option>
-            <option value="ACTIVE">Active</option>
-            <option value="RETURNED">Returned</option>
-            <option value="LOST">Lost</option>
-          </select>
-        </div>
-        <button
-          className="btn btn-primary"
-          onClick={() => { setForm(emptyForm); setFormError(null); setShowModal(true); }}
-        >
-          ＋ Assign Asset
+        <h2 className="modal-title" style={{ color: 'var(--text-secondary)' }}>All Assignments</h2>
+        <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
+          <span>📋</span> Create New Assignment
         </button>
       </div>
 
-      {/* Assignments table */}
       <div className="card">
-        {filtered.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">🔗</div>
-            <p>Walang assignments na nahanap</p>
-          </div>
-        ) : (
-          <div className="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Asset</th>
-                  <th>Employee</th>
-                  <th>Assigned By</th>
-                  <th>Date Assigned</th>
-                  <th>Date Returned</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((a, idx) => (
-                  <tr key={a.id}>
-                    <td style={{ color: "var(--text-muted)" }}>{idx + 1}</td>
-                    <td style={{ fontWeight: 500 }}>{a.asset?.name || "—"}</td>
-                    <td>{a.user?.fullName || "—"}</td>
-                    <td style={{ color: "var(--text-secondary)" }}>{a.assignedBy || "—"}</td>
-                    <td>{a.assignedDate || "—"}</td>
-                    <td style={{ color: "var(--text-secondary)" }}>{a.returnedDate || "—"}</td>
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Asset Details</th>
+                {/* SEPARATED EMPLOYEE AND DEPARTMENT */}
+                <th>Employee</th>
+                <th style={{ textAlign: 'center' }}>Department</th>
+                <th style={{ textAlign: 'center' }}>Status</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan="6" className="loading">Processing records...</td></tr>
+              ) : assignments.length > 0 ? (
+                assignments.map(item => (
+                  <tr key={item.id}>
                     <td>
-                      <span className={statusBadge(a.status)}>{a.status}</span>
+                      <div style={{ fontWeight: '500' }}>{item.assignedDate || 'N/A'}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>ID: #{item.id}</div>
                     </td>
                     <td>
-                      {/* Ipakita lang ang return/lost buttons kung ACTIVE ang assignment */}
-                      {a.status === "ACTIVE" && (
-                        <div className="action-buttons">
-                          <button
-                            className="btn btn-success btn-sm"
-                            onClick={() => handleReturn(a.id, a.asset?.name)}
-                          >
-                            ↩️ Return
-                          </button>
-                          <button
-                            className="btn btn-danger btn-sm"
-                            onClick={() => handleMarkLost(a.id, a.asset?.name)}
-                          >
-                            ❌ Lost
-                          </button>
-                        </div>
-                      )}
+                      <div style={{ fontWeight: '600' }}>{item.asset?.name || 'Unknown'}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>S/N: {item.asset?.serialNumber || 'N/A'}</div>
+                    </td>
+                    <td>{item.user?.fullName || 'Unknown User'}</td>
+                    {/* CENTER ALIGNED DEPARTMENT */}
+                    <td style={{ textAlign: 'center' }}>{item.user?.department || "—"}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span className={`badge badge-${item.status?.toLowerCase() || 'unknown'}`}>
+                        {item.status || 'UNKNOWN'}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="action-buttons" style={{ justifyContent: 'flex-end' }}>
+                        {item.status === 'ACTIVE' && (
+                          <>
+                            <button className="btn btn-success btn-sm" onClick={() => handleReturn(item.id)}>↩️ Return</button>
+                            <button className="btn btn-danger btn-sm" onClick={() => handleLost(item.id)}>❌ Lost</button>
+                          </>
+                        )}
+                        {item.status !== 'ACTIVE' && (
+                          <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '500' }}>
+                            {item.status === 'RETURNED' ? `Returned on ${item.returnedDate}` : 'Reported Lost'}
+                          </span>
+                        )}
+                      </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="empty-state">
+                    <div className="empty-icon">📝</div>
+                    <p>No assignment records found.</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Assign Asset Modal */}
-      {showModal && (
-        <Modal
-          title="🔗 Assign Asset to Employee"
-          onClose={() => setShowModal(false)}
-          footer={
-            <>
-              <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
-                Cancel
-              </button>
-              <button className="btn btn-primary" onClick={handleAssign}>
-                Assign Now
-              </button>
-            </>
-          }
-        >
-          {formError && <div className="alert alert-error">⚠️ {formError}</div>}
-
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Create New Assignment"
+        footer={
+          <>
+            <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cancel</button>
+            <button className="btn btn-primary" onClick={handleSubmit}>Assign Asset</button>
+          </>
+        }
+      >
+        <form className="assignment-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Asset (Available lang ang pwedeng i-assign) *</label>
-            <select name="assetId" className="form-control" value={form.assetId} onChange={handleChange}>
-              <option value="">-- Pumili ng Asset --</option>
-              {availableAssets.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name} · {a.type} · {a.serialNumber}
+            <label className="form-label">Available Asset</label>
+            <select 
+              className="form-control"
+              required
+              value={formData.assetId || ""}
+              onChange={(e) => setFormData({...formData, assetId: e.target.value})}
+            >
+              <option value="">-- Select Hardware --</option>
+              {assets.map(asset => (
+                <option key={asset.id} value={asset.id}>
+                  {asset.name} ({asset.brand}) - {asset.serialNumber}
                 </option>
               ))}
             </select>
-            {availableAssets.length === 0 && (
-              <p style={{ fontSize: "12px", color: "var(--warning)", marginTop: "4px" }}>
-                ⚠️ Walang available na assets!
-              </p>
-            )}
           </div>
-
+          
           <div className="form-group">
-            <label className="form-label">Employee *</label>
-            <select name="userId" className="form-control" value={form.userId} onChange={handleChange}>
-              <option value="">-- Pumili ng Employee --</option>
-              {users.filter((u) => u.active).map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.fullName} · {u.department}
+            <label className="form-label">Assign To</label>
+            <select 
+              className="form-control"
+              required
+              value={formData.userId || ""}
+              onChange={(e) => setFormData({...formData, userId: e.target.value})}
+            >
+              <option value="">-- Select Employee --</option>
+              {users.map(user => (
+                <option key={user.id} value={user.id}>
+                  {user.fullName} ({user.department})
                 </option>
               ))}
             </select>
@@ -275,24 +217,38 @@ function Assignments() {
 
           <div className="form-grid-2">
             <div className="form-group">
-              <label className="form-label">Assigned By *</label>
-              <input name="assignedBy" className="form-control"
-                placeholder="Pangalan mo (Admin)" value={form.assignedBy} onChange={handleChange} />
+              <label className="form-label">Authorized By</label>
+              <input 
+                className="form-control"
+                placeholder="Admin Name"
+                required
+                value={formData.assignedBy || ""}
+                onChange={(e) => setFormData({...formData, assignedBy: e.target.value})}
+              />
             </div>
             <div className="form-group">
-              <label className="form-label">Date Assigned</label>
-              <input name="assignedDate" type="date" className="form-control"
-                value={form.assignedDate} onChange={handleChange} />
+              <label className="form-label">Date (Auto-filled if empty)</label>
+              <input 
+                type="date"
+                className="form-control"
+                disabled
+                placeholder="Today"
+              />
             </div>
           </div>
 
           <div className="form-group">
-            <label className="form-label">Notes</label>
-            <input name="notes" className="form-control"
-              placeholder="hal. Para sa project use lang..." value={form.notes} onChange={handleChange} />
+            <label className="form-label">Notes / Remarks</label>
+            <textarea 
+              className="form-control"
+              rows="3"
+              placeholder="Hardware condition, etc."
+              value={formData.notes || ""}
+              onChange={(e) => setFormData({...formData, notes: e.target.value})}
+            />
           </div>
-        </Modal>
-      )}
+        </form>
+      </Modal>
     </div>
   );
 }

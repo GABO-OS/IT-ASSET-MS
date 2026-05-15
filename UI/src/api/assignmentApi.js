@@ -1,34 +1,40 @@
-// assignmentApi.js - Lahat ng HTTP calls para sa Asset Assignments
-
 import axios from "axios";
 
 const BASE_URL = "http://localhost:8080/api/assignments";
 
-// Kunin lahat ng assignments (buong history)
-export const getAllAssignments = () => axios.get(BASE_URL);
+/**
+ * Asset Assignment API Service
+ */
+const assignmentApi = {
+  // Get all assignment history
+  getAll: async () => {
+    const response = await axios.get(BASE_URL);
+    return response.data;
+  },
 
-// Kunin lahat ng ACTIVE assignments (may hawak pa ng asset)
-export const getActiveAssignments = () => axios.get(`${BASE_URL}/active`);
+  // Get currently active assignments
+  getActive: async () => {
+    const response = await axios.get(`${BASE_URL}/active`);
+    return response.data;
+  },
 
-// Kunin ang isang assignment gamit ang ID
-export const getAssignmentById = (id) => axios.get(`${BASE_URL}/${id}`);
+  // Create a new assignment
+  assign: async (data) => {
+    const response = await axios.post(`${BASE_URL}/assign`, data);
+    return response.data;
+  },
 
-// Kunin lahat ng assignments ng isang user
-export const getAssignmentsByUser = (userId) =>
-  axios.get(`${BASE_URL}/user/${userId}`);
+  // Mark an asset as returned
+  returnAsset: async (id) => {
+    const response = await axios.patch(`${BASE_URL}/${id}/return`);
+    return response.data;
+  },
 
-// Kunin ang history ng isang asset
-export const getAssignmentsByAsset = (assetId) =>
-  axios.get(`${BASE_URL}/asset/${assetId}`);
+  // Mark an asset as lost during assignment
+  markAsLost: async (id) => {
+    const response = await axios.patch(`${BASE_URL}/${id}/lost`);
+    return response.data;
+  }
+};
 
-// Mag-assign ng asset sa isang empleyado
-export const assignAsset = (assignmentData) =>
-  axios.post(`${BASE_URL}/assign`, assignmentData);
-
-// I-return ang asset (ibalik ng empleyado)
-export const returnAsset = (assignmentId) =>
-  axios.patch(`${BASE_URL}/${assignmentId}/return`);
-
-// I-mark ang asset na nawala
-export const markAsLost = (assignmentId) =>
-  axios.patch(`${BASE_URL}/${assignmentId}/lost`);
+export default assignmentApi;

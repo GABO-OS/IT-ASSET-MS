@@ -1,36 +1,46 @@
-// userApi.js - Lahat ng HTTP calls para sa Users/Employees
-
 import axios from "axios";
 
 const BASE_URL = "http://localhost:8080/api/users";
 
-// Kunin lahat ng users
-export const getAllUsers = () => axios.get(BASE_URL);
+/**
+ * User/Employee API Service
+ */
+const userApi = {
+  // Get all registered employees
+  getAll: async () => {
+    const response = await axios.get(BASE_URL);
+    return response.data;
+  },
 
-// Kunin lahat ng active users lang
-export const getActiveUsers = () => axios.get(`${BASE_URL}/active`);
+  // Get only active employees
+  getActive: async () => {
+    const response = await axios.get(`${BASE_URL}/active`);
+    return response.data;
+  },
 
-// Kunin ang isang user gamit ang ID
-export const getUserById = (id) => axios.get(`${BASE_URL}/${id}`);
+  // Get a specific user by ID
+  getById: async (id) => {
+    const response = await axios.get(`${BASE_URL}/${id}`);
+    return response.data;
+  },
 
-// Maghanap ng user gamit ang pangalan
-export const searchUsers = (name) =>
-  axios.get(`${BASE_URL}/search`, { params: { name } });
+  // Register a new employee
+  create: async (userData) => {
+    const response = await axios.post(BASE_URL, userData);
+    return response.data;
+  },
 
-// Kunin lahat ng users sa isang department
-export const getUsersByDepartment = (department) =>
-  axios.get(`${BASE_URL}/department/${department}`);
+  // Update employee information
+  update: async (id, userData) => {
+    const response = await axios.put(`${BASE_URL}/${id}`, userData);
+    return response.data;
+  },
 
-// Mag-register ng bagong user/empleyado
-export const createUser = (userData) => axios.post(BASE_URL, userData);
+  // Deactivate an employee
+  deactivate: async (id) => {
+    const response = await axios.patch(`${BASE_URL}/${id}/deactivate`);
+    return response.data;
+  }
+};
 
-// I-update ang impormasyon ng user
-export const updateUser = (id, userData) =>
-  axios.put(`${BASE_URL}/${id}`, userData);
-
-// I-deactivate ang user (soft delete - hindi ganap na natanggal)
-export const deactivateUser = (id) =>
-  axios.patch(`${BASE_URL}/${id}/deactivate`);
-
-// Hard delete ng user
-export const deleteUser = (id) => axios.delete(`${BASE_URL}/${id}`);
+export default userApi;

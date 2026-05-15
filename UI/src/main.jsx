@@ -1,15 +1,20 @@
-// main.jsx - Entry point ng React application
-// Ito ang pinakauna na nag-e-execute - dito ini-initialize ang buong app
-
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'   // I-import ang global styles
+import './index.css'
 import App from './App.jsx'
 
-// I-mount ang App component sa HTML element na may id="root"
-// Yung id="root" ay nasa index.html
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+/**
+ * Entry point of the React application
+ * Initializes and mounts the App to the DOM
+ */
+const rootElement = document.getElementById('root');
+
+if (rootElement) {
+  createRoot(rootElement).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+} else {
+  console.error("Root element not found. Make sure index.html has <div id='root'></div>");
+}

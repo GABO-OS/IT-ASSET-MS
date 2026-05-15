@@ -1,0 +1,16 @@
+C:\Users\maureen\IdeaProjects\IT ASSET MS\src\main\java\com\example\demo\controller\AssetAssignmentController.java
+C:\Users\maureen\IdeaProjects\IT ASSET MS\src\main\java\com\example\demo\controller\AssetController.java
+C:\Users\maureen\IdeaProjects\IT ASSET MS\src\main\java\com\example\demo\controller\UserController.java
+C:\Users\maureen\IdeaProjects\IT ASSET MS\src\main\java\com\example\demo\DemoApplication.java
+C:\Users\maureen\IdeaProjects\IT ASSET MS\src\main\java\com\example\demo\dto\AssetRequest.java
+C:\Users\maureen\IdeaProjects\IT ASSET MS\src\main\java\com\example\demo\dto\AssignmentRequest.java
+C:\Users\maureen\IdeaProjects\IT ASSET MS\src\main\java\com\example\demo\dto\UserRequest.java
+C:\Users\maureen\IdeaProjects\IT ASSET MS\src\main\java\com\example\demo\models\Asset.java
+C:\Users\maureen\IdeaProjects\IT ASSET MS\src\main\java\com\example\demo\models\AssetAssignment.java
+C:\Users\maureen\IdeaProjects\IT ASSET MS\src\main\java\com\example\demo\models\User.java
+C:\Users\maureen\IdeaProjects\IT ASSET MS\src\main\java\com\example\demo\repository\AssetAssignmentRepository.java
+C:\Users\maureen\IdeaProjects\IT ASSET MS\src\main\java\com\example\demo\repository\AssetRepository.java
+C:\Users\maureen\IdeaProjects\IT ASSET MS\src\main\java\com\example\demo\repository\UserRepository.java
+C:\Users\maureen\IdeaProjects\IT ASSET MS\src\main\java\com\example\demo\services\AssetAssignmentService.java
+C:\Users\maureen\IdeaProjects\IT ASSET MS\src\main\java\com\example\demo\services\AssetService.java
+C:\Users\maureen\IdeaProjects\IT ASSET MS\src\main\java\com\example\demo\services\UserService.java

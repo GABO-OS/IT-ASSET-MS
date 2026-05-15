@@ -1,0 +1,4 @@
+com\example\demo\models\AssetAssignment$AssignmentStatus.class
+com\example\demo\dto\AssignmentRequest.class
+com\example\demo\models\AssetAssignment.class
+com\example\demo\services\AssetAssignmentService.class

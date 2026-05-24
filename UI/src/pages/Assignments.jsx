@@ -112,9 +112,9 @@ function Assignments() {
                 <th>Asset Details</th>
                 {/* SEPARATED EMPLOYEE AND DEPARTMENT */}
                 <th>Employee</th>
-                <th style={{ textAlign: 'center' }}>Department</th>
-                <th style={{ textAlign: 'center' }}>Status</th>
-                <th style={{ textAlign: 'right' }}>Actions</th>
+                <th>Department</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -133,14 +133,14 @@ function Assignments() {
                     </td>
                     <td>{item.user?.fullName || 'Unknown User'}</td>
                     {/* CENTER ALIGNED DEPARTMENT */}
-                    <td style={{ textAlign: 'center' }}>{item.user?.department || "—"}</td>
-                    <td style={{ textAlign: 'center' }}>
+                    <td>{item.user?.department || "—"}</td>
+                    <td>
                       <span className={`badge badge-${item.status?.toLowerCase() || 'unknown'}`}>
                         {item.status || 'UNKNOWN'}
                       </span>
                     </td>
                     <td>
-                      <div className="action-buttons" style={{ justifyContent: 'flex-end' }}>
+                      <div className="action-buttons">
                         {item.status === 'ACTIVE' && (
                           <>
                             <button className="btn btn-success btn-sm" onClick={() => handleReturn(item.id)}>↩️ Return</button>

@@ -131,9 +131,8 @@ function Assets() {
                 {/* SPLIT BRAND AND MODEL COLUMNS */}
                 <th>Brand</th>
                 <th>Model</th>
-                {/* CENTER ALIGNED STATUS */}
-                <th style={{ textAlign: 'center' }}>Status</th>
-                <th style={{ textAlign: 'right' }}>Actions</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -151,13 +150,13 @@ function Assets() {
                     {/* DISPLAY BRAND AND MODEL SEPARATELY */}
                     <td>{asset.brand || "—"}</td>
                     <td>{asset.model || "—"}</td>
-                    <td style={{ textAlign: 'center' }}>
+                    <td>
                       <span className={`badge badge-${asset.status?.toLowerCase().replace('_', '-')}`}>
                         {asset.status?.replace('_', ' ')}
                       </span>
                     </td>
                     <td>
-                      <div className="action-buttons" style={{ justifyContent: 'flex-end' }}>
+                      <div className="action-buttons">
                         <button className="btn btn-secondary btn-sm" onClick={() => handleOpenModal(asset)}>✏️ Edit</button>
                         <button className="btn btn-danger btn-sm" onClick={() => handleDelete(asset.id)}>🗑️ Delete</button>
                       </div>

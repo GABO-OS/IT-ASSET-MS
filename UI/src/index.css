@@ -275,12 +275,17 @@ thead tr {
 
 th {
   padding: 16px 20px;
-  text-align: left;
+  text-align: center;
   font-size: 13px; /* Increased from 12px */
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.8px;
+  border-right: 1px solid var(--border);
+}
+
+th:last-child {
+  border-right: none;
 }
 
 tbody tr {
@@ -299,6 +304,12 @@ tbody tr:last-child {
 td {
   padding: 18px 20px;
   color: var(--text-primary);
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+
+td:last-child {
+  border-right: none;
 }
 
 /* ===================== BADGES / STATUS ===================== */
@@ -615,6 +626,7 @@ td {
 .action-buttons {
   display: flex;
   gap: 8px;
+  justify-content: center;
 }
 
 /* ===================== RESPONSIVE ===================== */

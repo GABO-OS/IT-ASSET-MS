@@ -108,11 +108,11 @@ function Users() {
               <tr>
                 <th>Full Name</th>
                 {/* CENTER ALIGNED DEPARTMENT */}
-                <th style={{ textAlign: 'center' }}>Department</th>
+                <th>Department</th>
                 <th>Position</th>
                 <th>Email Address</th>
-                <th style={{ textAlign: 'center' }}>Status</th>
-                <th style={{ textAlign: 'right' }}>Actions</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -128,16 +128,16 @@ function Users() {
                       </div>
                     </td>
                     {/* DISPLAY CENTERED DEPARTMENT */}
-                    <td style={{ textAlign: 'center' }}>{user.department || "—"}</td>
+                    <td>{user.department || "—"}</td>
                     <td>{user.position || "—"}</td>
                     <td>{user.email}</td>
-                    <td style={{ textAlign: 'center' }}>
+                    <td>
                       <span className={`badge ${user.active ? 'badge-available' : 'badge-retired'}`}>
                         {user.active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
                     <td>
-                      <div className="action-buttons" style={{ justifyContent: 'flex-end' }}>
+                      <div className="action-buttons">
                         <button className="btn btn-secondary btn-sm" onClick={() => handleOpenModal(user)}>✏️ Edit</button>
                       </div>
                     </td>

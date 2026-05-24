@@ -36,6 +36,10 @@ function Sidebar() {
           <span className="nav-icon">📝</span>
           <span>Assignments</span>
         </NavLink>
+        <NavLink to="/maintenance" className="nav-link">
+          <span className="nav-icon">🔧</span>
+          <span>Maintenance</span>
+        </NavLink>
       </nav>
     </aside>
   );

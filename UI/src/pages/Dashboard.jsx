@@ -86,8 +86,7 @@ function Dashboard() {
                 <th>Date</th>
                 <th>Asset</th>
                 <th>Employee</th>
-                {/* CENTER ALIGNED STATUS */}
-                <th style={{ textAlign: 'center' }}>Status</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
@@ -97,7 +96,7 @@ function Dashboard() {
                     <td>{item.assignedDate || 'N/A'}</td>
                     <td>{item.asset?.name || 'Unknown'}</td>
                     <td>{item.user?.fullName || 'Unknown'}</td>
-                    <td style={{ textAlign: 'center' }}>
+                    <td>
                       <span className={`badge badge-${item.status?.toLowerCase() || 'unknown'}`}>
                         {item.status || 'UNKNOWN'}
                       </span>
@@ -106,7 +105,7 @@ function Dashboard() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" style={{ textAlign: 'center', padding: '40px' }}>
+                  <td colSpan="4" style={{ padding: '40px' }}>
                     No recent activity.
                   </td>
                 </tr>
